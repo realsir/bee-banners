@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bee Banners</title>
+
+  <style>
+    :root{
+      --bg1:#ffd200;
+      --bg2:#f7971e;
+      --stroke: rgba(0,0,0,.12);
+      --glass: rgba(255,255,255,.18);
+      --shadow: 0 18px 50px rgba(0,0,0,.18);
+      --shadow2: 0 10px 30px rgba(0,0,0,.16);
+      --radius: 22px;
+      --ink: #1f1a10;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      overflow:hidden;
+      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+      color: var(--ink);
+    }
+
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background:
+        radial-gradient(rgba(255,255,255,.28) 1px, transparent 1px) 0 0/26px 26px,
+        radial-gradient(rgba(0,0,0,.06) 1px, transparent 1px) 13px 13px/26px 26px;
+      mix-blend-mode: soft-light;
+      opacity:.55;
+      pointer-events:none;
+    }
+
+    #flyLayer{
+      position:fixed; inset:0;
+      z-index:1;
+      pointer-events:none;
+      overflow:hidden;
+    }
+    .flyBee{
+      position:absolute;
+      left:-140px;
+      top:10vh;
+      width:42px; height:auto;
+      opacity:.92;
+      filter: drop-shadow(0 8px 8px rgba(0,0,0,.18));
+      animation: flyAcross linear forwards, wiggle ease-in-out infinite alternate;
+      transform-origin:center;
+    }
+
+    @keyframes flyAcross{
+      from { transform: translateX(-160px) translateY(0) scale(var(--s,1)); }
+      to   { transform: translateX(calc(100vw + 260px)) translateY(var(--drift, 0px)) scale(var(--s,1)); }
+    }
+    @keyframes wiggle{
+      from { rotate: -4deg; }
+      to   { rotate: 4deg; }
+    }
+
+    #stage{
+      position:fixed; inset:0;
+      display:grid;
+      place-items:center;
+      z-index:3;
+      padding: 16px;
+      pointer-events:auto;
+    }
+
+    #portalBtn{
+      width: min(360px, 78vw);
+      aspect-ratio: 1 / 1;
+      border:0;
+      background: transparent;
+      cursor:pointer;
+      padding:0;
+      display:grid;
+      place-items:center;
+      opacity:0;
+      transform: translateY(10px) scale(.98);
+      animation: fadeIn 900ms ease forwards;
+      animation-delay: 500ms;
+      outline: none;
+    }
+
+    #portalImg{
+      width:100%;
+      height:100%;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 26px rgba(0,0,0,.22));
+      transition: transform 280ms ease, filter 280ms ease;
+      will-change: transform;
+    }
+
+    #portalBtn:hover #portalImg{
+      transform: translateY(-3px) scale(1.02);
+      filter: drop-shadow(0 24px 32px rgba(0,0,0,.24));
+    }
+
+    @keyframes fadeIn{
+      to { opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    .diving #portalImg{
+      transform: translateY(26px) scale(0.12) rotate(8deg);
+      filter: blur(0.2px) drop-shadow(0 8px 10px rgba(0,0,0,.10));
+      transition: transform 900ms cubic-bezier(.16, .84, .2, 1), filter 900ms ease;
+    }
+
+    #inner{
+      position:fixed; inset:0;
+      z-index:4;
+      overflow:hidden;
+      pointer-events:none;
+      opacity:0;
+      transform: translateY(24px);
+      transition: opacity 650ms ease, transform 650ms ease;
+      padding: 16px;
+    }
+    #inner.active{
+      pointer-events:auto;
+      opacity:1;
+      transform: translateY(0);
+    }
+
+    .innerWrap{
+      margin: 0 auto;
+      width:min(1100px, 96vw);
+      height: calc(100vh - 32px);
+      background: var(--glass);
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      overflow:hidden;
+    }
+
+    .grid{
+      height:100%;
+      padding: 14px;
+      overflow:auto;
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+      gap: 12px;
+      align-content:start;
+    }
+
+    .thumb{
+      background: rgba(255,255,255,.22);
+      border:1px solid rgba(0,0,0,.10);
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.10);
+      cursor:pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+      display:grid;
+      gap:8px;
+      align-content:start;
+      min-height: 134px;
+    }
+    .thumb:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 12px 22px rgba(0,0,0,.14);
+      background: rgba(255,255,255,.30);
+    }
+    .thumb img{
+      width:100%;
+      height:90px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 10px rgba(0,0,0,.10));
+    }
+    .thumb .label{
+      font-size: 12px;
+      opacity:.88;
+      text-align:center;
+      letter-spacing:.2px;
+    }
+
+    #modal{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 22px;
+      background: rgba(0,0,0,.45);
+      z-index:10;
+    }
+    #modal.open{ display:flex; }
+
+    .modalCard{
+      width:min(860px, 96vw);
+      max-height: 86vh;
+      background: rgba(255,255,255,.92);
+      border-radius: 20px;
+      box-shadow: 0 26px 70px rgba(0,0,0,.28);
+      overflow:hidden;
+      border: 1px solid rgba(0,0,0,.10);
+      display:grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .modalBar{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      padding: 10px 12px;
+      background: linear-gradient(90deg, rgba(255,210,0,.55), rgba(247,151,30,.35));
+      border-bottom: 1px solid rgba(0,0,0,.10);
+      gap:10px;
+    }
+
+    .closeBtn{
+      border: 1px solid rgba(0,0,0,.14);
+      background: rgba(255,255,255,.7);
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    .modalBody{
+      padding: 14px;
+      display:grid;
+      place-items:center;
+      background: radial-gradient(circle at 50% 30%, rgba(255,210,0,.22), transparent 55%);
+    }
+
+    .modalBody img{
+      width: 100%;
+      max-width: 720px;
+      max-height: 64vh;
+      object-fit: contain;
+      filter: drop-shadow(0 18px 18px rgba(0,0,0,.18));
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .flyBee { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+      #portalBtn{ animation:none; opacity:1; transform:none; }
+      .diving #portalImg{ transition:none; }
+      #inner{ transition:none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="flyLayer" aria-hidden="true"></div>
+
+  <main id="stage">
+    <button id="portalBtn" aria-label="Enter">
+      <img id="portalImg" src="1.png" alt="Enter" />
+    </button>
+  </main>
+
+  <section id="inner" aria-hidden="true">
+    <div class="innerWrap">
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <div id="modal" role="dialog" aria-modal="true" aria-label="Viewer">
+    <div class="modalCard">
+      <div class="modalBar">
+        <button class="closeBtn" id="closeModal" aria-label="Close">Close</button>
+      </div>
+      <div class="modalBody">
+        <img id="modalImg" alt="Preview" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const flyLayer = document.getElementById('flyLayer');
+
+    function spawnFlyer(){
+      const img = document.createElement('img');
+      img.src = '2.png';
+      img.className = 'flyBee';
+
+      const top = Math.random() * 92;           
+      const size = 22 + Math.random() * 34;     
+      const duration = 6 + Math.random() * 10;  
+      const drift = (Math.random() * 120 - 60).toFixed(1) + 'px';
+      const scale = (0.75 + Math.random() * 0.9).toFixed(2);
+
+      img.style.top = top + 'vh';
+      img.style.width = size + 'px';
+      img.style.setProperty('--drift', drift);
+      img.style.setProperty('--s', scale);
+      img.style.animationDuration = `${duration}s, ${0.45 + Math.random()*0.45}s`;
+
+      flyLayer.appendChild(img);
+      setTimeout(() => img.remove(), (duration + 0.4) * 1000);
+    }
+
+    for(let i=0;i<18;i++) setTimeout(spawnFlyer, i*120);
+    setInterval(() => {
+      spawnFlyer();
+      if (Math.random() > 0.35) spawnFlyer();
+      if (Math.random() > 0.72) spawnFlyer();
+    }, 260);
+
+    const portalBtn = document.getElementById('portalBtn');
+    const stage = document.getElementById('stage');
+    const inner = document.getElementById('inner');
+
+    portalBtn.addEventListener('click', () => {
+      if (document.body.classList.contains('diving')) return;
+      document.body.classList.add('diving');
+
+      setTimeout(() => {
+        stage.style.display = 'none';
+        inner.classList.add('active');
+        inner.setAttribute('aria-hidden','false');
+      }, 680);
+    });
+
+    const grid = document.getElementById('grid');
+
+    for(let i=1;i<=80;i++){
+      const btn = document.createElement('button');
+      btn.className = 'thumb';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', `Open bee ${i}`);
+
+      const img = document.createElement('img');
+      img.src = `colb-${i}.png`;
+      img.alt = `bee ${i}`;
+
+      const label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = `bee ${i}`;
+
+      btn.append(img, label);
+      btn.addEventListener('click', () => openModal(i));
+
+      grid.appendChild(btn);
+    }
+
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modalImg');
+    const closeModalBtn = document.getElementById('closeModal');
+
+    function openModal(i){
+      modalImg.src = `bee-${i}.png`;
+      modalImg.alt = `bee ${i}`;
+      modal.classList.add('open');
+      closeModalBtn.focus();
+    }
+
+    function closeModal(){
+      modal.classList.remove('open');
+      modalImg.src = '';
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+  </script>
+</body>
+</html>
