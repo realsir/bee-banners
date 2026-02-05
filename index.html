@@ -12,7 +12,6 @@
       --stroke: rgba(0,0,0,.12);
       --glass: rgba(255,255,255,.18);
       --shadow: 0 18px 50px rgba(0,0,0,.18);
-      --shadow2: 0 10px 30px rgba(0,0,0,.16);
       --radius: 22px;
       --ink: #1f1a10;
     }
@@ -263,7 +262,7 @@
     </div>
   </section>
 
-  <div id="modal" role="dialog" aria-modal="true" aria-label="Viewer">
+  <div id="modal" role="dialog" aria-modal="true" aria-label="Viewer" aria-hidden="true">
     <div class="modalCard">
       <div class="modalBar">
         <button class="closeBtn" id="closeModal" aria-label="Close">Close</button>
@@ -275,6 +274,10 @@
   </div>
 
   <script>
+    const COUNT = 84; 
+    const THUMB_PREFIX = 'colb-';
+    const FULL_PREFIX = 'bee-';
+
     const flyLayer = document.getElementById('flyLayer');
 
     function spawnFlyer(){
@@ -282,9 +285,9 @@
       img.src = '2.png';
       img.className = 'flyBee';
 
-      const top = Math.random() * 92;           
-      const size = 22 + Math.random() * 34;     
-      const duration = 6 + Math.random() * 10;  
+      const top = Math.random() * 92;
+      const size = 22 + Math.random() * 34;
+      const duration = 6 + Math.random() * 10;
       const drift = (Math.random() * 120 - 60).toFixed(1) + 'px';
       const scale = (0.75 + Math.random() * 0.9).toFixed(2);
 
@@ -322,14 +325,14 @@
 
     const grid = document.getElementById('grid');
 
-    for(let i=1;i<=80;i++){
+    function makeThumb(i){
       const btn = document.createElement('button');
       btn.className = 'thumb';
       btn.type = 'button';
       btn.setAttribute('aria-label', `Open bee ${i}`);
 
       const img = document.createElement('img');
-      img.src = `colb-${i}.png`;
+      img.src = `${THUMB_PREFIX}${i}.png`;
       img.alt = `bee ${i}`;
 
       const label = document.createElement('div');
@@ -339,28 +342,46 @@
       btn.append(img, label);
       btn.addEventListener('click', () => openModal(i));
 
-      grid.appendChild(btn);
+      return btn;
+    }
+
+    for(let i=1;i<=COUNT;i++){
+      grid.appendChild(makeThumb(i));
     }
 
     const modal = document.getElementById('modal');
     const modalImg = document.getElementById('modalImg');
     const closeModalBtn = document.getElementById('closeModal');
 
+    let lastFocusEl = null;
+
     function openModal(i){
-      modalImg.src = `bee-${i}.png`;
+      lastFocusEl = document.activeElement;
+
+      modalImg.src = `${FULL_PREFIX}${i}.png`;
       modalImg.alt = `bee ${i}`;
+
       modal.classList.add('open');
-      closeModalBtn.focus();
+      modal.setAttribute('aria-hidden','false');
+
+      closeModalBtn.focus(); 
     }
 
     function closeModal(){
       modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
       modalImg.src = '';
+
+      if (lastFocusEl && typeof lastFocusEl.focus === 'function') {
+        lastFocusEl.focus(); 
+      }
     }
 
     closeModalBtn.addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+    });
   </script>
 </body>
 </html>
